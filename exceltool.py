@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import csv
 from openpyxl import Workbook
+import argparse
 
 
 # Funções Anonimas Base
@@ -21,33 +22,17 @@ def pair_file(file1, file2, column): return pd.merge(df(file1), df(file2), left_
 def read_file(file): return df(file).head(50)
 
 
-def convert_to_csv(file_xls, file_csv): return read_file(file_xls).to_csv(file_csv, encoding='utf-8', index=None,
+def convert_file_to_csv(file_xls, file_csv): return read_file(file_xls).to_csv(file_csv, encoding='utf-8', index=None,
                                                                            header=True)
 
 
 def remove_duplicades_lines(file): return df(file).drop_duplicates()
 
 
-def search(file, column, item): return print(df(file)[df(file)[column] == item])
+def search(file, column, word): return print(df(file)[df(file)[column] == word])
 
 
-help_program = ("Usage: python exceltool.py [OPTION] [FILE]\n" +
-                "\t-h --help\t\thelp\n" +
-                "\t-c --convert-to-csv\tconvert to csv\n" +
-                "\t-cl --clean\t\tremove empty lines\n" +
-                "\t-l --list\t\tlist csv\n" +
-                "\t-p --pair\t\tpair two csv\n" +
-                "\t-ce --convert-to-excel\tconvert to excel\n" +
-                "\t-s --search\t\tsearch word\n" +
-                "\t-col --column\t\tselect column" +
-                "\t-w --word\t\tword"
-                "Examples:\n" +
-                "\texceltool.exe --pair file1.csv file2.csv --column column --output file\n" +
-                "\texceltool.exe --convert-to-csv file.xls --output file\n" +
-                "\texceltool.exe --convert-to-excel file.csv --output file\n" +
-                "\texceltool.exe --clean file.csv --column column --output file\n" +
-                "\texceltool.exe --file file.csv --column column --search word" +
-                "\texceltool.exe --list file.csv")
+def clean_lines(list, column): return df(list).dropna(subset=[column], how='all')
 
 
 # ultimo passo
@@ -60,34 +45,39 @@ def convert_to_excel(file_csv, file_xlsx):
         wb.save(file_xlsx + '.xlsx')
 
 
-def clean_lines(list, column): return df(list).dropna(subset=[column], how='all')
+parser = argparse.ArgumentParser(description='Excel Tool')
 
+parser.add_argument('-r','--read', type=str, help='read csv')
+parser.add_argument('-c','--convert-to-csv', type=str, help='convert file to csv')
+parser.add_argument('-cl','--clean', type=str, help='remove empty lines')
+parser.add_argument('-p','--pair', nargs=2, type=str, help='pair two csv')
+parser.add_argument('-ce','--convert-to-excel', type=str, help='convert to excel')
+parser.add_argument('-s','--search', type=str, help='search word')
+parser.add_argument('-col','--column', type=str, help='select column')
+parser.add_argument('-w','--word', type=str, help='word')
+parser.add_argument('-o','--output', type=str, help='output file')
 
-if __name__ == "__main__":
+args = parser.parse_args()
+
+if __name__=='__main__':
     try:
-        if sys.argv[1] == '-h' or sys.argv[1] == '--help':
-            print(help_program)
-        elif sys.argv[1] == '-c' and sys.argv[3] == '-o' or sys.argv[1] == '--convert-to-csv' and \
-                sys.argv[3] == '--output':
-            convert_to_csv(file_xls=str(sys.argv[2]), file_csv=str(sys.argv[4]))
-        elif sys.argv[1] == '-cl' and sys.argv[3] == '-col' and sys.argv[5] == '-o' or sys.argv[1] == '--clean' and \
-                sys.argv[3] == '--column' and sys.argv[5] == '--output':
-            clean_lines(list=sys.argv[2], column=sys.argv[4]).to_csv(sys.argv[6] + '.csv', index=False)
-        elif sys.argv[1] == '-l' or sys.argv[1] == '--list':
-            print(read_file(str(sys.argv[2])))
-        elif sys.argv[1] == '-p' and sys.argv[4] == '-col' and sys.argv[6] == '-o' or sys.argv[1] == '--pair' and \
-            sys.argv[4] == '--column' and sys.argv[6] == '--output':
-            pair_file(file1=sys.argv[2], file2=sys.argv[3], column=sys.argv[5]).to_csv(sys.argv[7] + '.csv', index=False)
-        elif sys.argv[1] == '-ce' and sys.argv[3] == '-o' or sys.argv[1] == '--convert-to-excel' and \
-                sys.argv[3] == '--output':
-            convert_to_excel(arq_csv=str(sys.argv[2]), arq_xlsx=sys.argv[4])
-        elif sys.argv[1] == '-f' and sys.argv[3] == '-col' and sys.argv[5] == '-s' or sys.argv[1] == '--file' and \
-                sys.argv[3] == '--column' and sys.argv[5] == '--search':
-            search(file=sys.argv[2], column=sys.argv[4], item=sys.argv[6])
-        else:
-            print(help_program)
+        if args.output:
+            if args.pair:
+                if args.column:
+                    pair_file(file1=args.pair[0], file2=args.pair[1], column=args.column).to_csv(args.output + '.csv', index=False)
+            elif args.convert-to-csv:
+                convert_file_to_csv(file_xls=str(args.convert-to-csv), file_csv=str(args.output))
+            elif args.convert-to-excel:
+                convert_to_excel(arq_csv=str(args.convert-to-excel), arq_xlsx=args.output)
+            elif args.clean:
+                clean_lines(list=args.clean, column=args.column).to_csv(args.output + '.csv', index=False)
+        elif args.read:
+            read_file(str(args.read))
+        elif args.search:
+            search(file=args.search, column=args.column, word=args.word)
+            
+
     except IndexError as erro:
         print(erro)
         sys.exit(1)
-    finally:
-        print("Goodbye!")
+        
