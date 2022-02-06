@@ -14,46 +14,53 @@ def read_file(arq_xls): return pd.read_excel(arq_xls)
 
 
 # Funções Anonimas
-def parear_arquivo(arq1, arq2): return pd.merge(df(arq1), df(arq2), left_on='Produto', right_on='Produto',
+def pair_file(file1, file2, column): return pd.merge(df(file1), df(file2), left_on=column, right_on=column,
                                                 how='inner', right_index=False, left_index=False)
 
 
-def listar_arquivo(arq): return df(arq).head(50)
+def read_file(file): return df(file).head(50)
 
 
-def converter_para_csv(arq_xls, arq_csv): return read_file(arq_xls).to_csv(arq_csv, encoding='utf-8', index=None,
+def convert_to_csv(file_xls, file_csv): return read_file(file_xls).to_csv(file_csv, encoding='utf-8', index=None,
                                                                            header=True)
 
 
-def remover_linhas_duplicadas(arq): return df(arq).drop_duplicates()
+def remove_duplicades_lines(file): return df(file).drop_duplicates()
+
+
+def search(file, column, item): return print(df(file)[df(file)[column] == item])
 
 
 help_program = ("Usage: python exceltool.py [OPTION] [FILE]\n" +
-                "\t-h --help\t\tajuda\n" +
-                "\t-c --convert-to-csv\tconverter para csv\n" +
-                "\t-cl --clean\t\texcluir linhas vazias\n" +
-                "\t-l --list\t\tlistar csv\n" +
-                "\t-p --pair\t\tparear dois csv\n" +
-                "\t-ce --convert-to-excel\tconverter para excel\n" +
+                "\t-h --help\t\thelp\n" +
+                "\t-c --convert-to-csv\tconvert to csv\n" +
+                "\t-cl --clean\t\tremove empty lines\n" +
+                "\t-l --list\t\tlist csv\n" +
+                "\t-p --pair\t\tpair two csv\n" +
+                "\t-ce --convert-to-excel\tconvert to excel\n" +
+                "\t-s --search\t\tsearch word\n" +
+                "\t-col --column\t\tselect column" +
+                "\t-w --word\t\tword"
                 "Examples:\n" +
-                "\texceltool.exe --pair file1.csv file2.csv --output file\n" +
+                "\texceltool.exe --pair file1.csv file2.csv --column column --output file\n" +
                 "\texceltool.exe --convert-to-csv file.xls --output file\n" +
                 "\texceltool.exe --convert-to-excel file.csv --output file\n" +
                 "\texceltool.exe --clean file.csv --column column --output file\n" +
+                "\texceltool.exe --file file.csv --column column --search word" +
                 "\texceltool.exe --list file.csv")
 
 
 # ultimo passo
-def converter_para_excel(arq_csv, arq_xlsx):
+def convert_to_excel(file_csv, file_xlsx):
     wb = Workbook()
     ws = wb.active
-    with open(arq_csv, 'r') as f:
+    with open(file_csv, 'r') as f:
         for row in csv.reader(f):
             ws.append(row)
-        wb.save(arq_xlsx + '.xlsx')
+        wb.save(file_xlsx + '.xlsx')
 
 
-def limpar_linhas(lista_atual, coluna): return df(lista_atual).dropna(subset=[coluna], how='all')
+def clean_lines(list, column): return df(list).dropna(subset=[column], how='all')
 
 
 if __name__ == "__main__":
@@ -62,17 +69,21 @@ if __name__ == "__main__":
             print(help_program)
         elif sys.argv[1] == '-c' and sys.argv[3] == '-o' or sys.argv[1] == '--convert-to-csv' and \
                 sys.argv[3] == '--output':
-            converter_para_csv(arq_xls=str(sys.argv[2]), arq_csv=str(sys.argv[4]))
+            convert_to_csv(file_xls=str(sys.argv[2]), file_csv=str(sys.argv[4]))
         elif sys.argv[1] == '-cl' and sys.argv[3] == '-col' and sys.argv[5] == '-o' or sys.argv[1] == '--clean' and \
                 sys.argv[3] == '--column' and sys.argv[5] == '--output':
-            limpar_linhas(lista_atual=sys.argv[2], coluna=sys.argv[4]).to_csv(sys.argv[6] + '.csv', index=False)
+            clean_lines(list=sys.argv[2], column=sys.argv[4]).to_csv(sys.argv[6] + '.csv', index=False)
         elif sys.argv[1] == '-l' or sys.argv[1] == '--list':
-            print(listar_arquivo(str(sys.argv[2])))
-        elif sys.argv[1] == '-p' and sys.argv[4] == '-o' or sys.argv[1] == '--pair' and sys.argv[4] == '--output':
-            parear_arquivo(sys.argv[2], sys.argv[3]).to_csv(sys.argv[5] + '.csv', index=False)
+            print(read_file(str(sys.argv[2])))
+        elif sys.argv[1] == '-p' and sys.argv[4] == '-col' and sys.argv[6] == '-o' or sys.argv[1] == '--pair' and \
+            sys.argv[4] == '--column' and sys.argv[6] == '--output':
+            pair_file(file1=sys.argv[2], file2=sys.argv[3], column=sys.argv[5]).to_csv(sys.argv[7] + '.csv', index=False)
         elif sys.argv[1] == '-ce' and sys.argv[3] == '-o' or sys.argv[1] == '--convert-to-excel' and \
                 sys.argv[3] == '--output':
-            converter_para_excel(arq_csv=str(sys.argv[2]), arq_xlsx=sys.argv[4])
+            convert_to_excel(arq_csv=str(sys.argv[2]), arq_xlsx=sys.argv[4])
+        elif sys.argv[1] == '-f' and sys.argv[3] == '-col' and sys.argv[5] == '-s' or sys.argv[1] == '--file' and \
+                sys.argv[3] == '--column' and sys.argv[5] == '--search':
+            search(file=sys.argv[2], column=sys.argv[4], item=sys.argv[6])
         else:
             print(help_program)
     except IndexError as erro:
