@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from ast import parse
+from ensurepip import version
 import sys
 import pandas as pd
 import csv
@@ -45,8 +47,12 @@ def convert_to_excel(file_csv, file_xlsx):
         wb.save(file_xlsx + '.xlsx')
 
 
-parser = argparse.ArgumentParser(description='Excel Tool')
+parser = argparse.ArgumentParser(prog="exceltool", description='Excel Tool', 
+                                    epilog="Author: Isaías Pereira",
+                                    usage="%(prog)s [options]")
 
+parser.version = "exceltool cli 1.0.0"
+parser.add_argument('-v','--version', action="version")
 parser.add_argument('-r','--read', type=str, help='read csv')
 parser.add_argument('-c','--convert-to-csv', type=str, help='convert file to csv')
 parser.add_argument('-cl','--clean', type=str, help='remove empty lines')
@@ -72,7 +78,7 @@ if __name__=='__main__':
             elif args.clean:
                 clean_lines(list=args.clean, column=args.column).to_csv(args.output + '.csv', index=False)
         elif args.read:
-            read_file(str(args.read))
+            print(read_file(str(args.read)))
         elif args.search:
             search(file=args.search, column=args.column, word=args.word)
             
