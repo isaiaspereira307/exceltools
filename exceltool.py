@@ -15,7 +15,7 @@ from openpyxl.styles import (
     PatternFill,
 )
 import matplotlib.pyplot as plt
-from pandas.tools.plotting import table
+from pandas.plotting import table
 
 
 # Funções Anonimas Base
